@@ -1,0 +1,4 @@
+# Only one config stanza should fail
+
+[global]
+foo=bar

@@ -76,11 +76,15 @@ def get_client()
   # Login if this is the first time get_data() has been called. Store the
   # client in a global variable for future re-runs.
   if not $client
-    creds = Facter.value('rs_api_token').split(':')
-    Facter.debug("rs-facts: get_data() logging in for the first time " \
-                 "to account #{creds[0]}")
-    $client = RightApi::Client.new(:instance_token => creds[1],
-                                   :account_id => creds[0])
+    begin
+      creds = Facter.value('rs_api_token').split(':')
+      Facter.debug("rs-facts: get_data() logging in for the first time " \
+                   "to account #{creds[0]}")
+      $client = RightApi::Client.new(:instance_token => creds[1],
+                                     :account_id => creds[0])
+    rescue Exception => e
+      return
+    end
   end
   return $client
 end

@@ -1,0 +1,5 @@
+custom_attributes:
+  1.2.840.113549.1.9.7: password
+extension_requests:
+  pp_preshared_key: key
+

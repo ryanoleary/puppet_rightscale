@@ -1,9 +1,20 @@
 require 'spec_helper'
 
+# Facts mocked up for unit testing
+FACTS = {
+  :osfamily => 'Debian',
+  :operatingsystem => 'Ubuntu',
+  :operatingsystemrelease => '12',
+  :lsbdistid => 'Ubuntu',
+  :lsbdistcodename => 'precise',
+  :lsbdistrelease => '12.04',
+  :lsbmajdistrelease => '12',
+  :kernel => 'linux',
+}
+
 describe 'rightscale::repos', :type => 'class' do
   context 'default params' do
-    let(:facts) { RSPEC_DEFAULT_FACTS }
-
+    let(:facts) { FACTS }
     it { should compile.with_all_deps }
     it { should contain_class('Apt::Update') }
     it { should contain_class('Apt::Params') }
@@ -33,7 +44,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context 'with force => true' do
-    let(:facts) { RSPEC_DEFAULT_FACTS }
+    let(:facts) { FACTS }
     let(:params) { { 'force' => true } }
 
     it { should compile.with_all_deps }
@@ -44,7 +55,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context 'fallback_mirror => unittest.com' do
-    let(:facts) { RSPEC_DEFAULT_FACTS }
+    let(:facts) { FACTS }
     let(:params) { { 'fallback_mirror' => 'unittest.com' } }
 
     it { should compile.with_all_deps }
@@ -57,7 +68,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context '$::rs_island => unittest.com' do
-    my_facts = RSPEC_DEFAULT_FACTS.clone
+    my_facts = FACTS.clone
     my_facts[:rs_island] = 'unittest.com'
     let(:facts) { my_facts }
 
@@ -69,7 +80,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context 'date => 1999/01/01' do
-    let(:facts) { RSPEC_DEFAULT_FACTS }
+    let(:facts) { FACTS }
     let(:params) { { 'date' => '1999/01/01' } }
 
     it { should compile.with_all_deps }
@@ -80,7 +91,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context 'enable_security => latest' do
-    let(:facts) { RSPEC_DEFAULT_FACTS }
+    let(:facts) { FACTS }
     let(:params) { { 'enable_security' => 'latest' } }
 
     it { should compile.with_all_deps }
@@ -91,7 +102,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context 'enable_security => latest, fallback_mirror => unittest.com' do
-    let(:facts) { RSPEC_DEFAULT_FACTS }
+    let(:facts) { FACTS }
     let(:params) { { 'enable_security' => 'latest',
                      'fallback_mirror' => 'unittest.com' } }
 
@@ -102,7 +113,7 @@ describe 'rightscale::repos', :type => 'class' do
   end
 
   context 'enable_security => latest, $::rs_island => unittest.com' do
-    my_facts = RSPEC_DEFAULT_FACTS.clone
+    my_facts = FACTS.clone
     my_facts[:rs_island] = 'unittest.com'
     let(:facts) { my_facts }
     let(:params) { { 'enable_security' => 'latest' } }

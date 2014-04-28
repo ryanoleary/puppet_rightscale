@@ -73,11 +73,11 @@ Puppet::Type.type(:rs_tag).provide(:ruby) do
       properties = {}
 
       # Split our tag into a name/value
-      n, v = tag.split('=')
+      n, *v = tag.split('=')
 
       # Now populate some instance properties about the state of this tag
       properties[:ensure]   = :present
-      properties[:value]    = v
+      properties[:value]    = v.join('=')
       properties[:provider] = :ruby
       properties[:name]     = n
 

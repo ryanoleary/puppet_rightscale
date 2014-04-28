@@ -1,0 +1,4 @@
+# No global stanza, but does have other stanzas
+
+[foo]
+bar=baz

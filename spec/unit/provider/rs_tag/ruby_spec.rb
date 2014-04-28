@@ -47,6 +47,18 @@ describe provider_class do
     end
   end
 
+  describe 'self.get_tags with tag: name:predicate=test=foo=bar' do
+    it 'should return a correct tag list' do
+      existing_tags = '[ "name:predicate=test=foo=bar" ] '
+      provider.class.stubs(:rs_tag).with(['--list', '--format', 'json']).returns(existing_tags)
+
+      providers = provider.class.get_tags()
+      providers.length.should == 1
+      providers[0].name.should == 'name:predicate'
+      providers[0].value.should == 'test=foo=bar'
+    end
+  end
+
   describe 'self.get_tags() with no tags set' do
     it 'should return an empty array' do
       existing_tags = '[]'

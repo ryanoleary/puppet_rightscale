@@ -1,0 +1,10 @@
+[global]
+foo=bar
+
+[account1]
+email = email
+password = password
+
+[account2]
+oath2_token = 1234
+api_url = https://us-3.rightscale.com
