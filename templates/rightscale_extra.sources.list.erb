@@ -1,0 +1,9 @@
+# RightScale managed mirror repository configuration. Note, this file was created by Puppet
+# which means that the original file was destroyed. This file should work fine, but is not as
+# ideal as leaving the original in place. Please check your boot scripts.
+
+<% if @mirror %>
+deb http://<%= @mirror %>/rightscale_software_ubuntu/<%= @date %>/ precise main
+<% end -%>
+
+deb http://<%= @fallback_mirror %>/rightscale_software_ubuntu/<%= @date %>/ precise main

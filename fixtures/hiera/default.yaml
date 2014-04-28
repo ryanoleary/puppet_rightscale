@@ -1,0 +1,20 @@
+# LDAP stuff
+ldap_masterdn: 'cn=manager,dc=unittest,dc=com'
+ldap_masterpw: password
+ldap_binddn: 'cn=readonly,ou=roles,o=corp,dc=unittest,dc=com'
+ldap_bindpw: password
+ldap_host: ldap.unittest.com
+ldap_port: 636
+ldap_uri: ldaps://ldap.unittest.com
+ldap_basedn: 'dc=unittest,dc=com'
+ldap_userfilter: '&(objectclass=posixAccount)(!(employeeType=Terminated))'
+ldap_is_ad: false
+
+# IP Blocks
+ips_corp: 123.123.123.123/32
+
+# Librato stuff
+librato_statsd_prod_api_key: 1234
+librato_statsd_staging_api_key: 1234
+librato_collectd_api_key: 1234
+librato_email: 'test@example.com'

@@ -1,0 +1,9 @@
+---
+:backend:
+  - rspec
+  - yaml
+:yaml:
+  :datadir: "spec/fixtures/hiera"
+:hierarchy:
+  - "%{calling_module}"
+  - default

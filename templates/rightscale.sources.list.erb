@@ -1,0 +1,13 @@
+# RightScale managed mirror repository configuration. Note, this file was created by Puppet
+# which means that the original file was destroyed. This file should work fine, but is not as
+# ideal as leaving the original in place. Please check your boot scripts.
+
+<% if @mirror %>
+deb http://<%= @mirror %>/ubuntu_daily/<%= @date %>/ precise main restricted multiverse universe
+deb http://<%= @mirror %>/ubuntu_daily/<%= @date %>/ precise-updates main restricted multiverse universe
+deb http://<%= @mirror %>/ubuntu_daily/<%= @date %>/ precise-security main restricted multiverse universe
+<% end -%>
+
+deb http://<%= @fallback_mirror %>/ubuntu_daily/<%= @date %>/ precise main restricted multiverse universe
+deb http://<%= @fallback_mirror %>/ubuntu_daily/<%= @date %>/ precise-updates main restricted multiverse universe
+deb http://<%= @fallback_mirror %>/ubuntu_daily/<%= @date %>/ precise-security main restricted multiverse universe
