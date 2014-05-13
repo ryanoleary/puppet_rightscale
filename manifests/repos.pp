@@ -131,8 +131,9 @@ class rightscale::repos (
         repos       => 'main restricted universe multiverse';
       }
     }
+    $loc = "http://${fallback_mirror}/ubuntu_daily/${enable_security}"
     apt::source { 'rightscale_security_fallback':
-      location    => "http://${fallback_mirror}/ubuntu_daily/${enable_security}",
+      location    => $loc,
       include_src => false,
       release     => "${::lsbdistcodename}-security",
       repos       => 'main restricted universe multiverse';
