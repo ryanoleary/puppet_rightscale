@@ -119,7 +119,7 @@ class RightScale
 
     # Return the results... deduped or not.
     sorted = results.sort
-    unique = sorted.uniq{|x| x.user_id}
+    unique = sorted.uniq
     return dedup ? unique : sorted
   end
 

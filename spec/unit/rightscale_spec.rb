@@ -36,7 +36,7 @@ describe RightScale do
 
     # Mock the config list to pass in a specific config file
     stub_const("RightScale::POTENTIAL_CONFIGS",
-      File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid_config'))
+      [File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid_config')])
 
     # Lastly, create our RightScale class object
     @rs = RightScale.new()
@@ -62,25 +62,25 @@ describe RightScale do
 
   it "get_config() with empty config file should fail" do
     stub_const("RightScale::POTENTIAL_CONFIGS",
-      File.join(File.dirname(__FILE__), '..', 'fixtures', 'empty_config'))
+      [File.join(File.dirname(__FILE__), '..', 'fixtures', 'empty_config')])
     expect { @rs.get_config() }.to raise_error(/global section/)
   end
 
   it "get_config() with config file missing stanzas should fail" do
     stub_const("RightScale::POTENTIAL_CONFIGS",
-      File.join(File.dirname(__FILE__), '..', 'fixtures', 'missing_stanzas'))
+      [File.join(File.dirname(__FILE__), '..', 'fixtures', 'missing_stanzas')])
     expect { @rs.get_config() }.to raise_error(/at least one account/)
   end
 
   it "get_config() with config file missing global stanzas should fail" do
     stub_const("RightScale::POTENTIAL_CONFIGS",
-      File.join(File.dirname(__FILE__), '..', 'fixtures', 'missing_global'))
+      [File.join(File.dirname(__FILE__), '..', 'fixtures', 'missing_global')])
     expect { @rs.get_config() }.to raise_error(/global section/)
   end
 
   it "get_config() with valid config file should return config" do
     stub_const("RightScale::POTENTIAL_CONFIGS",
-      File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid_config'))
+      [File.join(File.dirname(__FILE__), '..', 'fixtures', 'valid_config')])
     @rs.get_config()['account1']['email'].should == 'email'
     @rs.get_config()['account2']['oath2_token'].should == '1234'
   end
@@ -118,8 +118,8 @@ describe RightScale do
     @mocked_rest_client.stub(:post).with({
        :url => "https://my.rightscale.com/api/oauth2",
        :payload => {
-         "refresh_token" => { :refresh_token=>"abc" },
-         "grant_type"     => "refresh_token"},
+         "refresh_token" => { :refresh_token => "abc" },
+         "grant_type"    => "refresh_token"},
        :timeout => 15,
        :content_type=>"application/x-www-form-urlencoded",
         :X_API_VERSION=>"1.5", :accept=>"*/*"}
