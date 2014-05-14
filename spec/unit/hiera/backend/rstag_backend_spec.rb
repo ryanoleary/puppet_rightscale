@@ -7,8 +7,9 @@ RSpec.configure do |config|
   config.mock_framework = :rspec
 end
 
-Logging.logger.root.appenders = Logging.appenders.stdout
-Logging.logger.root.level = :warn
+Logging.logger.root.appenders = nil
+#Logging.logger.root.appenders = Logging.appenders.stdout
+#Logging.logger.root.level = :error
 
 class Hiera
   module Backend

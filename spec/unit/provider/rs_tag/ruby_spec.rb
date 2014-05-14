@@ -25,6 +25,12 @@ describe provider_class do
       provider.class.instances
       provider.class.prefetch({})
     end
+
+    it 'should work with rs_tag failure' do
+      provider.class.stubs(:rs_tag).with(['--list', '--format', 'json']).raises(Puppet::ExecutionFailure, "Error")
+      provider.class.instances.should == nil
+      provider.class.prefetch({}).should == nil
+    end
   end
 
   describe 'exists?' do

@@ -53,7 +53,8 @@ Puppet::Type.type(:rs_tag).provide(:ruby) do
     begin
       output = rs_tag(['--list', '--format', 'json'])
     rescue Puppet::ExecutionFailure => e
-      raise Puppet::Error, "Getting tags had an error -> #{e.inspect}"
+      Puppet.debug("Rs_tag execution had an error (skipping) -> #{e.inspect}")
+      return nil
     end
 
     begin
@@ -102,7 +103,10 @@ Puppet::Type.type(:rs_tag).provide(:ruby) do
   # of each resource in an object. This prevents multiple calls out to the
   # `rs_tag` executable.
   def self.prefetch(resources)
-    instances.each do |prov|
+    i = instances
+    return nil if not i
+
+    i.each do |prov|
       if resource = resources[prov.name]
         resource.provider = prov
       end
