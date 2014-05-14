@@ -16,8 +16,9 @@ class FakeClient
   end
 end
 
-Logging.logger.root.appenders = Logging.appenders.stdout
-Logging.logger.root.level = :warn
+Logging.logger.root.appenders = nil
+#Logging.logger.root.appenders = Logging.appenders.stdout
+#Logging.logger.root.level = :warn
 
 describe RightScale do
   before :each do
