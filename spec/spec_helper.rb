@@ -12,6 +12,9 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
   SimpleCov::Formatter::HTMLFormatter,
   SimpleCov::Formatter::CSVFormatter,
 ]
-SimpleCov.at_exit do
-  SimpleCov.result.format!
-end
+
+# TODO(mwise): Figure out how to exceute this only in Ruby 1.9+,
+# it fails in Ruby 1.8.7.
+#SimpleCov.at_exit do
+#  SimpleCov.result.format!
+#end
