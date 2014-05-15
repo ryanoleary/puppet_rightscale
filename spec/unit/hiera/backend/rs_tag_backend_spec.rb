@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'logging'
-require File.join(File.dirname(__FILE__), '../../../../lib/hiera/backend/rstag_backend.rb')
+require File.join(File.dirname(__FILE__), '../../../../lib/hiera/backend/rs_tag_backend.rb')
 
 # Enable rspec-mock
 RSpec.configure do |config|
@@ -13,7 +13,7 @@ Logging.logger.root.appenders = nil
 
 class Hiera
   module Backend
-    describe Rstag_backend do
+    describe Rs_tag_backend do
       before :each do
         # Stub the logging, since it doesn't normally work in the spec tests.
         Hiera.stub :debug
@@ -24,7 +24,7 @@ class Hiera
         allow(@client).to receive(:new) { @client }
         allow(@client).to receive(:get_config) { configs }
         stub_const("RightScale", @client)
-        @backend = Rstag_backend.new()
+        @backend = Rs_tag_backend.new()
 
         # Mock the :prefix method to return a special prefix for
         # unit testing purposes. Turns out that mocking Hiera can be tricky
@@ -36,14 +36,14 @@ class Hiera
 
       describe '#initialize' do
         it 'should print debug through Hiera' do
-          Hiera.should_receive(:debug).with('[RSTag] Hiera Backend Initialized')
-          Rstag_backend.new()
+          Hiera.should_receive(:debug).with('[rs_tag_backend] Hiera Backend Initialized')
+          Rs_tag_backend.new()
         end
       end
 
       describe '#debug' do
-        it 'should append the [RSTag] prefix' do
-          Hiera.should_receive(:debug).with('[RSTag] Unittest')
+        it 'should append the [rs_tag_backend] prefix' do
+          Hiera.should_receive(:debug).with('[rs_tag_backend] Unittest')
           @backend.debug('Unittest')
         end
       end
