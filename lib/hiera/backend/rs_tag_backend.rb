@@ -41,7 +41,7 @@ end
 
 class Hiera
   module Backend
-    class Rstag_backend
+    class Rs_tag_backend
       # This method initializes the backend once, and creates the common
       # RightScale connection object. This means that we create one object
       # and reuse it multiple times throughout the puppet runs -- which cuts
@@ -49,7 +49,7 @@ class Hiera
       def initialize
         # Redirect logging messages through our custom PuppetLogger appender
         # that sends the messages through Puppet.debug.
-        Logging.logger.root.add_appenders(PuppetLogger.new('RSTag'))
+        Logging.logger.root.add_appenders(PuppetLogger.new('rs_tag_backend'))
         Logging.logger.root.level = :debug
 
         # Begin initializing the RightScale object
@@ -67,12 +67,12 @@ class Hiera
       end
 
       # Quick logger method that writes out a common logging line with the
-      # [RSTag] prefix.
+      # [rs_tag-backend] prefix.
       #
       # @param msg [String]  The message to log out.
       #
       def debug(msg)
-        Hiera.debug("[RSTag] #{msg}")
+        Hiera.debug("[rs_tag_backend] #{msg}")
       end
 
       # The lookup function is the most important part of a custom backend.

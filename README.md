@@ -239,7 +239,7 @@ latency to your API calls.
 
 ## Hiera RightScale Backend
 
-The Hiera `rstag` backend allows your Puppet Master to search RightScale for
+The Hiera `rs_tag` backend allows your Puppet Master to search RightScale for
 tags matching a given expression, and return all of the unique values
 associated with those tags. This allows you to tag machines as providing
 a particular service, and then use that tag to discover the servers
@@ -250,8 +250,8 @@ Here's an example:
     $syslog_servers = hiera('svc_syslog:production')
 
 Since you have the power of Hiera at your fingertips, you can choose your
-hierarchy to put priority on the `rstag` backend, or have your priority
-focus on local YAML files and fall-back to the `rstag` plugin. Additionally,
+hierarchy to put priority on the `rs_tag` backend, or have your priority
+focus on local YAML files and fall-back to the `rs_tag` plugin. Additionally,
 you can always have a failsafe:
 
     $syslog_servers = hiera('svc_syslog:production', 'syslog.mydomain.com')
@@ -259,14 +259,14 @@ you can always have a failsafe:
 ### Hiera Configuration
 
 In order to prevent all `hiera()` lookups from going to the RightScale
-API (*which is very slow*), you must configure your `rstag` hiera backend
+API (*which is very slow*), you must configure your `rs_tag` hiera backend
 to only pay attention to particular Hiera keynames. For example, take this
 Hiera config:
 
     ---
     :backends:
       - yaml
-      - rstag
+      - rs_tag
     :yaml:
       :datadir: %{settings::manifestdir}/hiera
       :rightscale:
