@@ -106,9 +106,6 @@ class Hiera
         # default value of nil will be returned.
         answer = nil
 
-        # Quick logging statement
-        debug("Looking up #{key} in RightScale backend")
-
         # Sanity  check, submitting a nil tag should quickly return nil
         return answer if key == nil
 

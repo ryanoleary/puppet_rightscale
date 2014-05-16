@@ -65,6 +65,16 @@ class Hiera
           @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
         end
 
+        it 'should only make one call for multiple executions of the lookup method' do
+          tag_name    = 'unittest_myservice'
+          tag_results = [ 'unittest_myservice=value1' ]
+          expected    = [ 'value1' ]
+          @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
+          @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
+          @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
+          @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
+        end
+
         it 'should return multiple servers' do
           tag_name    = 'unittest_myservice'
           tag_results = [ 'unittest_myservice=value1', 'unittest_myservice=value2' ]
