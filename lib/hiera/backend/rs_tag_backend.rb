@@ -34,7 +34,7 @@ require File.join(File.dirname(__FILE__), '..', '..', 'rightscale.rb')
 # framework.
 class PuppetLogger < ::Logging::Appender
   def write(message)
-    Puppet.debug("#{message.logger}: #{message.data}")
+    Hiera.debug("[rs_tag_backend] #{message.logger}: #{message.data}")
   end
 end
 
@@ -155,7 +155,7 @@ class Hiera
 
         # Call out with the supplied tag and try to get results back
         results = @rs.get_tags_by_tag(key)
-        debug("Returned results: #{results.inspect}")
+        debug("Results from RightScale: #{results.inspect}")
 
         # Now, walk through the results and simply get back the actual
         # values (from namespace:predicate=value) that were returned.
@@ -199,7 +199,7 @@ class Hiera
         end
 
         # Ok, if we got here, the key is good and up to date, so return it
-        debug("Returning #{key} from cache: #{@cache[key][:values]}")
+        debug("Returning #{key} from cache: #{@cache[key][:values].inspect}")
         return @cache[key][:values]
       end
     end
