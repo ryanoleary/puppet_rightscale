@@ -199,7 +199,7 @@ class Hiera
         end
 
         # Ok, if we got here, the key is good and up to date, so return it
-        debug("Returning #{key} from cache: #{@cache[key][:values]}"
+        debug("Returning #{key} from cache: #{@cache[key][:values]}")
         return @cache[key][:values]
       end
     end
