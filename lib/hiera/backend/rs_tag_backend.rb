@@ -151,6 +151,7 @@ class Hiera
         # Return the value from our cache if its there
         cached_results = get_from_cache(key)
         return cached_results if cached_results
+        debug("Not found in cache, requesting #{key} from RightScale")
 
         # Call out with the supplied tag and try to get results back
         results = @rs.get_tags_by_tag(key)
@@ -198,6 +199,7 @@ class Hiera
         end
 
         # Ok, if we got here, the key is good and up to date, so return it
+        debug("Returning #{key} from cache: #{@cache[key][:values]}"
         return @cache[key][:values]
       end
     end
