@@ -53,7 +53,10 @@ class Hiera
         Logging.logger.root.level = :debug
 
         # Begin initializing the RightScale object
-        @rs     = RightScale.new()
+        @rs = RightScale.new()
+
+        # Initialize a local hash that we'll use to cache objects temporarily
+        @cache = Hash.new()
 
         # Done!
         debug("Hiera Backend Initialized")
@@ -64,6 +67,13 @@ class Hiera
       # for details on WHY this is necessary.
       def prefix
         Config[:rightscale][:tag_prefix]
+      end
+
+      # Accessor method for the [:rightscale][:cache_timeout] config option
+      # so that its easier to mock in the unit tests. See the spec file
+      # for details on WHY this is necessary.
+      def cache_timeout
+        Config[:rightscale][:cache_timeout]
       end
 
       # Quick logger method that writes out a common logging line with the
@@ -106,9 +116,6 @@ class Hiera
         # default value of nil will be returned.
         answer = nil
 
-        # Quick logging statement
-        debug("Looking up #{key} in RightScale backend")
-
         # Sanity  check, submitting a nil tag should quickly return nil
         return answer if key == nil
 
@@ -141,6 +148,11 @@ class Hiera
       #                     isn't terribly useful).
       #
       def search(key)
+        # Return the value from our cache if its there
+        cached_results = get_from_cache(key)
+        return cached_results if cached_results
+        debug("Not found in cache, requesting #{key} from RightScale")
+
         # Call out with the supplied tag and try to get results back
         results = @rs.get_tags_by_tag(key)
         debug("Returned results: #{results.inspect}")
@@ -152,8 +164,43 @@ class Hiera
           values << elem.split('=')[1]
         end
 
-        # Now return the values
+        # Now return the values (and store them in the cache). Only store
+        # them in the cache if the cache_timeout is actually set.
+        if cache_timeout
+          @cache[key] = {
+            :timestamp => Time.now.to_i,
+            :values    => values,
+          }
+        end
+
         return values
+      end
+
+      # Checks the local instance cache to see if a particular key is already
+      # stored or not. If it is, and if the timestamp is still valid (not
+      # expired) then it returns that key values.
+      #
+      # @param key [String] The string name of the key that we're searching
+      #                     for in our cache.
+      #
+      def get_from_cache(key)
+        # Return quickly if the key is not in the cache at all
+        return false if not @cache.has_key?(key)
+
+        # Return false if something is wrong with the cached data
+        # and it has no timestamp.
+        return false if not @cache[key].has_key?(:timestamp)
+
+        # Return quickly if the key is in the cache, but its expired
+        delta = Time.now.to_i - @cache[key][:timestamp]
+        if delta > cache_timeout
+          @cache.delete(key)
+          return false
+        end
+
+        # Ok, if we got here, the key is good and up to date, so return it
+        debug("Returning #{key} from cache: #{@cache[key][:values]}")
+        return @cache[key][:values]
       end
     end
   end

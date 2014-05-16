@@ -271,6 +271,7 @@ Hiera config:
       :datadir: %{settings::manifestdir}/hiera
       :rightscale:
         :tag_prefix: "my_svc_"
+        :cache_timeout: 300
       :hierarchy:
         - hosts/%{hostname}
         - %{domain}
@@ -280,6 +281,13 @@ The above configuration guarantees that only lookups that start with the word
 `my_svc_` will trigger the remote lookup via RightScale. For example:
 
     $syslog_srevers = hiera('my_svc_syslog:prod')
+
+#### Option: cache\_timeout
+
+If this option is set (to an integer), the *Rs_tag* backend will store in
+memory the recent values returned from the RightScale API and avoid making
+duplicate lookups. This helps prevent tons of API calls if you have common
+services that you look up very frequently.
 
 ### Server Configuration
 

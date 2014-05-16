@@ -32,6 +32,9 @@ class Hiera
         # prefix setting into its own method makes it easier for us mock
         # out just that method.
         @backend.stub(:prefix) { 'unittest_' }
+
+        # Mock the cache timeout to 5 seconds
+        @backend.stub(:cache_timeout) { 5 }
       end
 
       describe '#initialize' do
@@ -79,6 +82,69 @@ class Hiera
           expected    = [ ]
           @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
           @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
+        end
+      end
+
+      describe "#search" do
+        it "should call get_tags_by_tag once for one search" do
+          tag_name    = 'unittest_myservice'
+          tag_results = [ 'unittest_myservice=value1' ]
+          expected    = [ 'value1' ]
+          @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
+          @backend.search('unittest_myservice').should == expected
+          @backend.instance_variable_get('@cache').has_key?('unittest_myservice').should == true
+        end
+
+        it "should call get_tags_by_tag once and then cache results" do
+          tag_name    = 'unittest_myservice'
+          tag_results = [ 'unittest_myservice=value1' ]
+          expected    = [ 'value1' ]
+          @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
+          @backend.search('unittest_myservice').should == expected
+          @backend.instance_variable_get('@cache').has_key?('unittest_myservice').should == true
+          @backend.search('unittest_myservice').should == expected
+          @backend.search('unittest_myservice').should == expected
+        end
+
+        it "should not store an item in the cache if the cache_timeout is nil" do
+          tag_name    = 'unittest_myservice'
+          tag_results = [ 'unittest_myservice=value1' ]
+          expected    = [ 'value1' ]
+          @backend.stub(:cache_timeout) { nil }
+          @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
+          @backend.search('unittest_myservice').should == expected
+          @backend.instance_variable_get('@cache').has_key?('unittest_myservice').should == false
+        end
+      end
+
+      describe "#get_from_cache" do
+        it "should fail if item not in cache" do
+          @backend.get_from_cache('foobar').should == false
+        end
+
+        it "should fail if item in cache, but missing timestamp" do
+          mocked_cache = { 'foobar' => { :values => 'abcd' } }
+          @backend.instance_variable_set("@cache", mocked_cache)
+          @backend.get_from_cache('foobar').should == false
+        end
+
+        it "should fail if the timestamp is expired" do
+          mocked_cache = {
+                  'foobar' => {
+                    :timestamp => Time.now.to_i - 10,
+                    :values => 'abcd' } }
+          @backend.instance_variable_set("@cache", mocked_cache)
+          @backend.get_from_cache('foobar').should == false
+          @backend.instance_variable_get("@cache")['foobar'].should == nil
+        end
+
+        it "should succeed if the key exists and timestamp is fresh" do
+          mocked_cache = {
+                  'foobar' => {
+                    :timestamp => Time.now.to_i,
+                    :values => 'abcd' } }
+          @backend.instance_variable_set("@cache", mocked_cache)
+          @backend.get_from_cache('foobar').should == 'abcd'
         end
       end
     end
