@@ -164,6 +164,10 @@ class Hiera
           values << elem.split('=')[1]
         end
 
+        # Finally, if the result is an empty array (which is cachable, because
+        # we are OK caching a 'negative' result) then we actually return nil.
+        values = nil if values == []
+
         # Now return the values (and store them in the cache). Only store
         # them in the cache if the cache_timeout is actually set.
         if cache_timeout
