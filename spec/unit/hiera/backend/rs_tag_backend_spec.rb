@@ -76,10 +76,10 @@ class Hiera
           @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
         end
 
-        it 'should return no servers' do
+        it 'should return nil if no servers' do
           tag_name    = 'unittest_myservice'
           tag_results = [ ]
-          expected    = [ ]
+          expected    = nil
           @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
           @backend.lookup('unittest_myservice', :scope, :override, :priority).should == expected
         end
@@ -114,6 +114,15 @@ class Hiera
           @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
           @backend.search('unittest_myservice').should == expected
           @backend.instance_variable_get('@cache').has_key?('unittest_myservice').should == false
+        end
+
+        it "should return nil if no results are found, and cache the nil" do
+          tag_name    = 'unittest_myservice'
+          tag_results = [ ]
+          expected    = nil
+          @client.should_receive(:get_tags_by_tag).once.with(tag_name).and_return(tag_results)
+          @backend.search('unittest_myservice').should == expected
+          @backend.instance_variable_get('@cache').has_key?('unittest_myservice').should == true
         end
       end
 
