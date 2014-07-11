@@ -11,5 +11,5 @@ class rightscale::params {
   # statement. For now, this supports Ubuntu 10/12 with Ruby 1.8.
   $right_api_client = '1.5.19'
   $right_aws        = '3.1.0'
-  $rest_client      = '1.6.7'
+  $rest_client      = 'installed'
 }
