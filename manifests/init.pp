@@ -26,18 +26,18 @@ class rightscale (
   # backend as well as the puppet rs-facts plugin that gathers common
   # RightScale facts.
   package {
-    'rest_client':
+    'rest-client':
     ensure   => $rest_client,
     provider => 'gem';
 
     'right_aws':
     ensure   => $right_aws,
     provider => 'gem',
-    require  => Package['rest_client'];
+    require  => Package['rest-client'];
 
     'right_api_client':
     ensure   => $right_api_client,
     provider => 'gem',
-    require  => Package['rest_client'];
+    require  => Package['rest-client'];
   }
 }
