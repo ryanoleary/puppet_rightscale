@@ -11,7 +11,7 @@
 #   right_aws Gem version to install
 #
 # [*rest_client*]
-#   Supporting rest_client Gem Version to Install 
+#   Supporting rest_client Gem Version to Install
 #
 # === Authors
 #
