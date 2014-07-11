@@ -18,7 +18,7 @@ describe 'rightscale', :type => 'class' do
     it do
       should compile.with_all_deps
       should contain_package('rest_client').with(
-        'ensure' => '1.6.7')
+        'ensure' => 'installed')
       should contain_package('right_aws').with(
         'ensure' => '3.1.0')
       should contain_package('right_api_client').with(
