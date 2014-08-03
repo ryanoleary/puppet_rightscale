@@ -106,7 +106,6 @@ def get_disk_cache()
     Facter.debug("rs-facts: get_disk_cache() json cache does not exist")
     $disk_cache['dob'] = now if not $disk_cache.has_key?('dob')
     $disk_cache['data'] = {} if not $disk_cache.has_key?('data')
-    $disk_cache['data']['update'] = true
     return $disk_cache
   else
     # Read settings from disk cache file
@@ -159,11 +158,9 @@ def get_data(data)
   cache = get_cache()
 
   # IF there is no RightScale client available, bail quietly.
-  if cache.has_key?('update')
-    if not get_client()
-      Facter.debug("rs-facts: No RightAPI client available.")
-      return []
-    end
+  if not get_client()
+    Facter.debug("rs-facts: No RightAPI client available.")
+    return []
   end
 
   # If the cache doesn't have all of our expected data sections re-get it
@@ -302,5 +299,4 @@ if not cache.has_key?('cached')
     |f| f << cache.to_json
   }
 end
-
 
