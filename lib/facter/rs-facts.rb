@@ -153,15 +153,15 @@ def get_cache()
 end
 
 def get_data(data)
-  # Get our cache object. If its not available, a new one is created that
-  # is empty, which will trigger the code blocks to fetch new data..
-  cache = get_cache()
-
   # IF there is no RightScale client available, bail quietly.
   if not get_client()
     Facter.debug("rs-facts: No RightAPI client available.")
     return []
   end
+
+  # Get our cache object. If its not available, a new one is created that
+  # is empty, which will trigger the code blocks to fetch new data..
+  cache = get_cache()
 
   # If the cache doesn't have all of our expected data sections re-get it
   if not cache.has_key?('instance')
