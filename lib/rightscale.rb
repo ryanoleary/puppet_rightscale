@@ -197,6 +197,9 @@ class RightScale
   # configured account in the config file. This method gets the clients once,
   # then returns the same list over and over again.
   #
+  # Client objects are expired after 1 hour.
+  # http://reference.rightscale.com/api1.5/resources/ResourceOauth2.html
+  #
   # * *Args*    :
   #   None
   #
@@ -204,25 +207,36 @@ class RightScale
   #   - array containing valid RightApi::Client Objects
   #
   def get_clients()
-    return @clients if @clients
+
+    @clients = {} if not @clients
+
+    now = Time.now.to_i
+    allowed_dob = now - 3600  # 1 hour
+
+    if @clients.has_key?('dob') and @clients['dob'] > allowed_dob
+      return @clients['objects']
+    end
 
     # Get our config object
     config = get_config()
 
     clients = []
     get_config().get_groups().each do |id|
-      if id != 'global'
-        @log.debug("Creating client object for account #{id}...")
-        clients << get_client(
-          id,
-          config[id]['email'],
-          config[id]['password'],
-          config[id]['oath2_token'],
-          config[id]['api_url'])
-        @log.debug(clients[-1].inspect)
-      end
+      next if id == 'global'
+
+      @log.debug("Creating client object for account #{id}...")
+      clients << get_client(
+        id,
+        config[id]['email'],
+        config[id]['password'],
+        config[id]['oath2_token'],
+        config[id]['api_url'])
+      @log.debug(clients[-1].inspect)
     end
-    @clients = clients
+
+    @clients['objects'] = clients
+    @clients['dob'] = now
+    return clients
   end
 
   # Get a single instance of a RightApi::Client basd on the supplied

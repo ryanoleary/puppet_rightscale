@@ -20,11 +20,19 @@ Logging.logger.root.appenders = nil
 #Logging.logger.root.appenders = Logging.appenders.stdout
 #Logging.logger.root.level = :warn
 
+def random_client
+    @rscid = 0 unless @rscid
+    @rscid += 1
+    return 'RightScale::Client #id:%s' % @rscid
+end
+
+
 describe RightScale do
   before :each do
     # Mock the RightApi::Client to respond with a mocked object
     @mocked_api_client = double("RightApi::Client")
     stub_const("RightApi::Client",  @mocked_api_client)
+    @mocked_api_client.stub(:new).and_return { random_client }
 
     # Mock the RestClient::Resource to always respond with a mocked object
     @mocked_rest_client = double("RestClient")
@@ -105,6 +113,19 @@ describe RightScale do
     first_clients = @rs.get_clients()
     second_clients = @rs.get_clients()
     first_clients.should be second_clients
+  end
+
+  it "get_clients() should refresh after 1 hour" do
+
+    @mocked_api_client.should_receive(:new).exactly(4).times
+    @mocked_rest_client.should_receive(:post).twice
+
+    Time.stub(:now).and_return(0)
+    first_clients = @rs.get_clients()
+    Time.stub(:now).and_return(10000)  # Drastically higher than 3600
+    second_clients = @rs.get_clients()
+
+    first_clients.should_not be second_clients
   end
 
   ############################
