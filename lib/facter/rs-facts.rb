@@ -139,7 +139,7 @@ def get_cache()
   $cache['data'] = {} if not $cache.has_key?('data')
   $cache['dob'] = now if not $cache.has_key?('dob')
 
-  # If the last time we ran was more than 60 seconds ago, we wipe out our
+  # If the last time we ran was more than 4 hours ago, we wipe out our
   # cache objects entirely.
   time_delta = now - $cache['dob']
   Facter.debug("rs-facts: cache age is #{time_delta}s")
@@ -148,6 +148,13 @@ def get_cache()
     $cache['data'] = {}
     $cache['dob'] = now
   end
+
+  # If the last time we ran was more than 60 seconds ago, we wipe out
+  # our tags cache only
+  if time_delta > 60
+    Facter.debug("rs-facts: cached tags results have expired")
+    $cache.delete('tags')
+  end  
 
   return $cache['data']
 end
@@ -251,12 +258,6 @@ def get_data(data)
       # catch new tags that have been created.
       Facter.add(key) {
         setcode { get_data('tags')[key] }
-      }
-    end
-  else
-    cache['tags'].each do |k,v|
-      Facter.add(k) {
-        setcode { get_data('tags')[k] }
       }
     end
   end
