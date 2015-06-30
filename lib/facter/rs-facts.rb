@@ -27,6 +27,12 @@ rescue LoadError
   Facter.debug "The 'right_api_client' gem is missing. Please install it."
 end
 
+begin
+  require 'json'
+rescue LoadError
+  Facter.debug "The 'json' gem is missing. Please install it."
+end
+
 # RightScale Cloud 'user-data' dictionary file location
 file='/var/spool/cloud/user-data.dict'
 
@@ -89,26 +95,66 @@ def get_client()
   return $client
 end
 
+def get_disk_cache()
+  # What time is it now?
+  now = Time.now.to_i
+
+  # Create the $disk_cache object if its missing
+  $disk_cache = {} if not $disk_cache
+
+  if not File.exists?("/var/tmp/rs-facts.json")
+    Facter.debug("rs-facts: get_disk_cache() json cache does not exist")
+    $disk_cache['dob'] = now if not $disk_cache.has_key?('dob')
+    $disk_cache['data'] = {} if not $disk_cache.has_key?('data')
+    return $disk_cache
+  else
+    # Read settings from disk cache file
+    if not $disk_cache.has_key?('dob')
+      file_cache_mtime = File.mtime("/var/tmp/rs-facts.json").to_i
+      Facter.debug("rs-facts: get_disk_cache() reading json cache file");
+      file = File.read("/var/tmp/rs-facts.json")
+      $json = JSON.parse(file);
+      $disk_cache['data'] = {}
+      $disk_cache['data']['links'] = $json['links']
+      $disk_cache['data']['tags'] = $json['tags']
+      $disk_cache['data']['instance'] = $json['instance']
+      $disk_cache['data']['inputs'] = $json['inputs']
+      $disk_cache['data']['cached'] = true
+      $disk_cache['dob'] = file_cache_mtime
+    end
+  end
+  return $disk_cache
+end
+
 def get_cache()
   # What time is it now?
   now = Time.now.to_i
 
+  $disk_cache_data = get_disk_cache() if not $disk_cache_data
+
   # Create the $cache object if its missing
-  $cache = {} if not $cache
+  $cache = $disk_cache_data if not $cache
 
   # If there is no $cache object, then create it
   $cache['data'] = {} if not $cache.has_key?('data')
   $cache['dob'] = now if not $cache.has_key?('dob')
 
-  # If the last time we ran was more than 60 seconds ago, we wipe out our
+  # If the last time we ran was more than 4 hours ago, we wipe out our
   # cache objects entirely.
   time_delta = now - $cache['dob']
   Facter.debug("rs-facts: cache age is #{time_delta}s")
-  if time_delta > 60
+  if time_delta > 14400
     Facter.debug("rs-facts: cached results have expired")
     $cache['data'] = {}
     $cache['dob'] = now
   end
+
+  # If the last time we ran was more than 60 seconds ago, we wipe out
+  # our tags cache only
+  if time_delta > 60
+    Facter.debug("rs-facts: cached tags results have expired")
+    $cache.delete('tags')
+  end  
 
   return $cache['data']
 end
@@ -125,7 +171,7 @@ def get_data(data)
   cache = get_cache()
 
   # If the cache doesn't have all of our expected data sections re-get it
-  if not cache.has_key?(:instance)
+  if not cache.has_key?('instance')
     Facter.debug("rs-facts: refetching data...")
     # Get our instance data object... we'll walk through it below.
     instance = get_client().get_instance() if not instance
@@ -136,26 +182,26 @@ def get_data(data)
     #
     # (this effectively ignores keys where the value is an array of hashes,
     #  those need to he handled separately below)
-    cache[:instance] = {}
+    cache['instance'] = {}
     instance.raw.smash('rs_').each do |k,v|
       # Clean the key-name
       k = clean(k)
 
       # If its a basic string, store it
-      cache[:instance][k] = v if v.is_a? String
+      cache['instance'][k] = v if v.is_a? String
 
       # Now, look for any key/value pair where the value is an Array,
       # then walk through that array and add each key/value pair.
       if v.is_a? Array
         v.each_with_index do |v,x|
           k = "#{k}_#{x}"
-          cache[:instance][k] = v if v.is_a? String
+          cache['instance'][k] = v if v.is_a? String
         end
       end
     end
   end
 
-  if not cache.has_key?(:inputs)
+  if not cache.has_key?('inputs')
     Facter.debug('rs-facts: fetching inputs...')
     # Get our instance data object... we'll walk through it below.
     instance = get_client().get_instance() if not instance
@@ -163,15 +209,15 @@ def get_data(data)
     # Walk through all of our inputs. Each one is a hash thats stored within
     # the inputs array. Each hash has a name/value. For each one, split and
     # parse them appropriately before adding them to our cache.
-    cache[:inputs] = {}
+    cache['inputs'] = {}
     instance.raw['inputs'].each do |k|
       key = clean("rs_input_#{k['name']}")
       value = k['value'].split(':')[1]
-      cache[:inputs][key] = value
+      cache['inputs'][key] = value
     end
   end
 
-  if not cache.has_key?(:links)
+  if not cache.has_key?('links')
     Facter.debug('rs-facts: fetching links...')
     # Get our instance data object... we'll walk through it below.
     instance = get_client().get_instance() if not instance
@@ -179,15 +225,15 @@ def get_data(data)
     # Walk through all of our links. Each one is a hash thats stored within
     # the inputs array. Each hash has a name/value. For each one, split and
     # parse them appropriately before adding them to our cache.
-    cache[:links] = {}
+    cache['links'] = {}
     instance.raw['links'].each do |k|
       key = clean("rs_link_#{k['rel']}")
       value = k['href']
-      cache[:links][key] = value
+      cache['links'][key] = value
     end
   end
 
-  if not cache.has_key?(:tags)
+  if not cache.has_key?('tags')
     Facter.debug('rs-facts: fetching tags...')
     # Get our instance data object... we'll walk through it below.
     instance = get_client().get_instance() if not instance
@@ -198,20 +244,20 @@ def get_data(data)
     tags = r.by_resource(:resource_hrefs => [instance.href])
 
     # Walk through the list of tags returned for the search issued above
-    cache[:tags] = {}
+    cache['tags'] = {}
     tags[0].raw['tags'].each do |k|
       # Get the tags and store them in the cache
       split_tag = k['name'].split('=')
       key = clean("rs_tag_#{split_tag[0]}")
       value = split_tag[1]
-      cache[:tags][key] = value
+      cache['tags'][key] = value
 
       # RightScale tags are a bit unique... because the tag name itself can come
       # and go (a user adds, or removes a tag live in the RS interface), we must
       # actually call Factor.add() inside the loop below to make sure that we
       # catch new tags that have been created.
       Facter.add(key) {
-        setcode { get_data(:tags)[key] }
+        setcode { get_data('tags')[key] }
       }
     end
   end
@@ -223,27 +269,35 @@ end
 # For each instance variable available, iterate through and call Facter.add()
 # for each available instance fact. These fact names do not change, so we do
 # this outside of the loop of get_data().
-get_data(:instance).each do |k,v|
+get_data('instance').each do |k,v|
   Facter.add(k) {
-    setcode { get_data(:instance)[k] }
+    setcode { get_data('instance')[k] }
   }
 end
 
 # For each instance variable available, iterate through and call Facter.add()
 # for each available instance fact. These fact names do not change, so we do
 # this outside of the loop of get_data().
-get_data(:links).each do |k,v|
+get_data('links').each do |k,v|
   Facter.add(k) {
-    setcode { get_data(:links)[k] }
+    setcode { get_data('links')[k] }
   }
 end
 
 # For each instance variable available, iterate through and call Facter.add()
 # for each available instance fact. These fact names do not change, so we do
 # this outside of the loop of get_data().
-get_data(:inputs).each do |k,v|
+get_data('inputs').each do |k,v|
   Facter.add(k) {
-    setcode { get_data(:inputs)[k] }
+    setcode { get_data('inputs')[k] }
+  }
+end
+
+cache = get_cache()
+if not cache.has_key?('cached')
+  Facter.debug("Saving JSON Cache Files")
+  File.open("/var/tmp/rs-facts.json","w") {
+    |f| f << cache.to_json
   }
 end
 
